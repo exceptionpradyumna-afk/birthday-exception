@@ -10,11 +10,12 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
             font-family: 'Poppins', sans-serif, system-ui;
         }
 
         body {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #ffecd2 100%);
+            background: #111;
             color: #333;
             min-height: 100vh;
             overflow: hidden;
@@ -25,7 +26,7 @@
 
         .step {
             display: none;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             position: absolute;
             top: 0;
@@ -44,31 +45,33 @@
         /* STEP 1: LIGHT BULB SCREEN */
         #step-1 {
             background: #111;
+            cursor: pointer;
         }
 
-        .bulb-container {
-            cursor: pointer;
-            text-align: center;
-            animation: swing 2.5s ease-in-out infinite alternate;
+        .bulb-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
         }
 
         .bulb {
-            font-size: 85px;
-            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
-            transition: all 0.3s ease;
+            font-size: 90px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+            transition: transform 0.3s ease;
         }
 
         .bulb-text {
-            margin-top: 20px;
+            margin-top: 25px;
             color: #ff9a9e;
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 1.2rem;
+            font-weight: 600;
             letter-spacing: 1px;
-        }
-
-        @keyframes swing {
-            0% { transform: rotate(-10deg); }
-            100% { transform: rotate(10deg); }
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* STEP 2: SECRET SURPRISE CARD */
@@ -85,7 +88,7 @@
             box-shadow: 0 20px 40px rgba(232, 67, 147, 0.25);
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.8);
-            animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popUp 0.5s ease;
         }
 
         @keyframes popUp {
@@ -189,8 +192,8 @@
         }
 
         @keyframes floatUp {
-            0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-115vh) rotate(15deg); }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-115vh); }
         }
 
         @keyframes pulseBig {
@@ -207,8 +210,8 @@
         }
 
         @keyframes fallItem {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(75vh) rotate(360deg); opacity: 0; }
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(75vh); opacity: 0; }
         }
 
         .modal {
@@ -309,10 +312,10 @@
     <canvas id="canvas"></canvas>
 
     <!-- STEP 1: Light Bulb -->
-    <div id="step-1" class="step active">
-        <div class="bulb-container" onclick="startExperience()">
+    <div id="step-1" class="step active" onclick="startExperience()">
+        <div class="bulb-box">
             <div class="bulb" id="bulbIcon">💡</div>
-            <div class="bulb-text">💡 Tap to Turn On & Open Surprise! ✨</div>
+            <div class="bulb-text">💡 Tap Anywhere to Open Surprise! ✨</div>
         </div>
     </div>
 
@@ -338,7 +341,7 @@
         </div>
     </div>
 
-    <!-- STEP 3 & 4: Balloon Pop Game & Party Celebration -->
+    <!-- STEP 3 & 4: Balloon Pop Game -->
     <div id="step-3" class="step">
         <div style="z-index: 10; margin-top: -30px;">
             <div style="font-size: 2.2rem; margin-bottom: 5px;">👨‍👩‍👧‍👦 🎉 🎈</div>
@@ -354,7 +357,7 @@
         </div>
     </div>
 
-    <!-- Big Balloon Modal Wish -->
+    <!-- Modal Wish -->
     <div class="modal" id="wishModal">
         <div class="modal-box">
             <h2 style="color: #d63031; font-size: 1.8rem; margin-bottom: 8px;">💖 HAPPY BIRTHDAY MAMA! 💖</h2>
@@ -395,11 +398,20 @@
     </div>
 
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
         let isMusicPlaying = false;
 
-        // 🎵 Continuous "Happy Birthday to You" Music Synthesizer (Loops automatically)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
         function playContinuousHappyBirthdaySong() {
+            initAudio();
             if (isMusicPlaying) return;
             isMusicPlaying = true;
 
@@ -411,6 +423,7 @@
             ];
 
             function loopSong() {
+                if (!audioCtx) return;
                 let time = audioCtx.currentTime;
                 let totalDuration = 0;
 
@@ -429,16 +442,15 @@
                     totalDuration += note.d + 0.05;
                 });
 
-                // Loop song continuously
                 setTimeout(loopSong, totalDuration * 1000);
             }
 
             loopSong();
         }
 
-        // Pop Sound Effect for Balloons
         function playPopSound() {
             try {
+                initAudio();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'triangle';
@@ -453,9 +465,9 @@
             } catch(e){}
         }
 
-        // Boom Sound Effect for Party Popper & Big Balloon
         function playBoomSound() {
             try {
+                initAudio();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sawtooth';
@@ -470,18 +482,15 @@
             } catch(e){}
         }
 
-        // STEP 1 -> STEP 2
         function startExperience() {
             playPopSound();
             playContinuousHappyBirthdaySong();
-            document.getElementById('bulbIcon').style.filter = "drop-shadow(0 0 35px #ffeaa7)";
-            document.getElementById('bulbIcon').style.transform = "scale(1.25)";
+            document.getElementById('bulbIcon').style.transform = "scale(1.3)";
             setTimeout(() => {
                 showStep('step-2');
-            }, 600);
+            }, 300);
         }
 
-        // STEP 2 Verification
         function verifyDetails() {
             const name = document.getElementById('nameInput').value.trim();
             const date = document.getElementById('dateInput').value.trim();
@@ -500,7 +509,6 @@
             document.getElementById(stepId).classList.add('active');
         }
 
-        // STEP 3: Balloon Game
         let balloonInterval;
         function startBalloons() {
             const area = document.getElementById('balloonArea');
@@ -550,7 +558,6 @@
             showStep('step-5');
         }
 
-        // STEP 5: Blow Candle
         function blowCandle() {
             const flame = document.getElementById('flame');
             if (flame.style.display !== 'none') {
@@ -559,30 +566,3 @@
                 document.getElementById('familyCheer').style.display = 'block';
                 createParticles(window.innerWidth/2, window.innerHeight/2, '#fdcb6e', 50);
                 document.getElementById('nextBtn').style.display = 'inline-block';
-            }
-        }
-
-        function goToFinal() {
-            showStep('step-6');
-        }
-
-        // STEP 6: Party Popper
-        function blastPopper() {
-            playBoomSound();
-            for(let i = 0; i < 90; i++) {
-                setTimeout(() => {
-                    createParticles(
-                        Math.random() * window.innerWidth, 
-                        Math.random() * window.innerHeight, 
-                        ['#ff7675','#74b9ff','#55efc4','#fdcb6e','#fab1a0'][Math.floor(Math.random()*5)]
-                    );
-                }, i * 20);
-            }
-            setTimeout(() => {
-                document.getElementById('finalCard').style.display = 'block';
-                document.getElementById('popperHint').style.display = 'none';
-            }, 400);
-        }
-
-        // Confetti Canvas Engine
-        const canvas = document.getElemen
